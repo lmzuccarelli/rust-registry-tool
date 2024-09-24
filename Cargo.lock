@@ -782,6 +782,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "registry-tool"
+version = "0.2.1"
+dependencies = [
+ "clap",
+ "custom-logger",
+ "mirror-auth",
+ "mirror-error",
+ "mirror-query",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "reqwest"
 version = "0.11.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -819,21 +834,6 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "winreg",
-]
-
-[[package]]
-name = "rust-registry-tool"
-version = "0.2.0"
-dependencies = [
- "clap",
- "custom-logger",
- "mirror-auth",
- "mirror-error",
- "mirror-query",
- "serde",
- "serde_derive",
- "serde_json",
- "tokio",
 ]
 
 [[package]]

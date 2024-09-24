@@ -1,6 +1,6 @@
 [package]
-name = "rust-registry-tool"
-version = "0.2.0"
+name = "registry-tool"
+version = "0.2.1"
 edition = "2021"
 
 [dependencies]
