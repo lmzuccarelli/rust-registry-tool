@@ -611,8 +611,8 @@ source = "git+https://github.com/lmzuccarelli/rust-mirror-error?branch=main#9d9c
 
 [[package]]
 name = "mirror-query"
-version = "0.4.0"
-source = "git+https://github.com/lmzuccarelli/rust-mirror-query?branch=main#21dd635ee0abe0084a1593e10bb7b84370c385d7"
+version = "0.5.0"
+source = "git+https://github.com/lmzuccarelli/rust-mirror-query?branch=main#da263d48247cf3fbdf5422b2a752ca795007539f"
 dependencies = [
  "async-trait",
  "custom-logger",
@@ -823,7 +823,7 @@ dependencies = [
 
 [[package]]
 name = "rust-registry-tool"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "clap",
  "custom-logger",

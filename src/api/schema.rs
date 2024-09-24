@@ -68,6 +68,14 @@ pub enum Commands {
             help = "The images name to query (required)"
         )]
         name: String,
+        #[arg(
+            short,
+            long,
+            value_name = "query-params",
+            help = "The link query-param to append to url for pagination (required)"
+        )]
+        query_params: Option<String>,
+
         #[arg(short, long, value_name = "no-tls-verify", help = "disable tls-verify")]
         no_tls_verify: bool,
     },

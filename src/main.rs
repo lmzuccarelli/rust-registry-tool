@@ -58,6 +58,7 @@ async fn main() {
             namespace,
             name,
             no_tls_verify,
+            query_params,
         }) => {
             let t_impl = ImplTokenInterface {};
             let token = get_token(
@@ -75,10 +76,28 @@ async fn main() {
                 namespace.clone(),
                 name.clone()
             );
-            if *no_tls_verify {
-                url = url.replace("https", "http");
+            if query_params.is_some() {
+                url = format!(
+                    "https://{}/{}",
+                    registry.clone(),
+                    query_params.clone().unwrap()
+                );
+            }
+            if token.is_err() {
+                log.error(&format!(
+                    "token {}",
+                    token.as_ref().err().unwrap().to_string().to_lowercase()
+                ));
+                process::exit(1);
             }
             let res = i_query.get_details(url, token.unwrap(), false).await;
+            if res.is_err() {
+                log.error(&format!(
+                    "response {}",
+                    res.as_ref().err().unwrap().to_string().to_lowercase()
+                ));
+                process::exit(1);
+            }
             let res_json = serde_json::from_str(&res.unwrap());
             let root: Tags = res_json.unwrap();
             log.info(&format!("image {}", root.name));
@@ -120,7 +139,10 @@ async fn main() {
             from,
             to,
             no_tls_verify,
-        }) => {}
+        }) => {
+            log.info(&format!("{} {} {}", from, to, no_tls_verify));
+            todo!()
+        }
 
         None => {
             log.error("sub command not recognized");
