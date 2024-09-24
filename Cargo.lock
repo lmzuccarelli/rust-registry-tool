@@ -591,6 +591,7 @@ dependencies = [
 [[package]]
 name = "mirror-auth"
 version = "0.7.0"
+source = "git+https://github.com/lmzuccarelli/rust-mirror-auth?branch=main#e318b32250203f6c487babe8d0ce3665d175225d"
 dependencies = [
  "async-trait",
  "base64",
@@ -610,7 +611,8 @@ source = "git+https://github.com/lmzuccarelli/rust-mirror-error?branch=main#9d9c
 
 [[package]]
 name = "mirror-query"
-version = "0.3.0"
+version = "0.4.0"
+source = "git+https://github.com/lmzuccarelli/rust-mirror-query?branch=main#21dd635ee0abe0084a1593e10bb7b84370c385d7"
 dependencies = [
  "async-trait",
  "custom-logger",
