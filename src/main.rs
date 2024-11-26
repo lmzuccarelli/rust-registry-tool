@@ -3,7 +3,7 @@ use clap::Parser;
 use custom_logger::*;
 use mirror_auth::{get_token, ImplTokenInterface};
 use mirror_query::*;
-use std::process;
+use std::{fs, process};
 use tokio;
 
 mod api;
@@ -47,7 +47,8 @@ async fn main() {
                 url = url.replace("https", "http");
             }
             let res = i_query.get_details(url, token.unwrap(), false).await;
-            let res_json = serde_json::from_str(&res.unwrap());
+            let rd = res.unwrap();
+            let res_json = serde_json::from_str(&rd.data);
             let root: Catalogs = res_json.unwrap();
             for image in root.repositories.iter() {
                 log.info(&format!("{}", image));
@@ -58,7 +59,7 @@ async fn main() {
             namespace,
             name,
             no_tls_verify,
-            query_params,
+            //query_params,
         }) => {
             let t_impl = ImplTokenInterface {};
             let token = get_token(
@@ -72,17 +73,10 @@ async fn main() {
             let i_query = ImplQueryImageInterface {};
             let mut url = format!(
                 "https://{}/v2/{}/{}/tags/list",
-                registry,
+                registry.clone(),
                 namespace.clone(),
                 name.clone()
             );
-            if query_params.is_some() {
-                url = format!(
-                    "https://{}/{}",
-                    registry.clone(),
-                    query_params.clone().unwrap()
-                );
-            }
             if token.is_err() {
                 log.error(&format!(
                     "token {}",
@@ -90,20 +84,45 @@ async fn main() {
                 ));
                 process::exit(1);
             }
-            let res = i_query.get_details(url, token.unwrap(), false).await;
-            if res.is_err() {
+            let mut vec_tags: Vec<Tags> = Vec::new();
+            let mut query = "query".to_string();
+            let mut query_dump = "".to_string();
+            log.info(&format!("querying {} ", registry.clone()));
+            log.info("this will take some time ...");
+            while query.len() > 0 {
+                let res = i_query
+                    .get_details(url.clone(), token.as_ref().unwrap().to_string(), false)
+                    .await;
+                if res.is_err() {
+                    log.error(&format!(
+                        "response {}",
+                        res.as_ref().err().unwrap().to_string().to_lowercase()
+                    ));
+                    process::exit(1);
+                }
+                let rd = res.unwrap();
+                query = rd.link;
+                url = format!("https://{}{}", registry.clone(), query);
+                query_dump.push_str(&format!("{}\n", query));
+                let res_json = serde_json::from_str(&rd.data);
+                let root: Tags = res_json.unwrap();
+                vec_tags.insert(0, root.clone());
+            }
+
+            let json_res = serde_json::to_string(&vec_tags);
+            if json_res.is_err() {
                 log.error(&format!(
-                    "response {}",
-                    res.as_ref().err().unwrap().to_string().to_lowercase()
+                    "parsing json {}",
+                    json_res.as_ref().err().unwrap().to_string().to_lowercase()
                 ));
-                process::exit(1);
             }
-            let res_json = serde_json::from_str(&res.unwrap());
-            let root: Tags = res_json.unwrap();
-            log.info(&format!("image {}", root.name));
-            for tag in root.tags.iter() {
-                log.info(&format!("tag   {}", tag));
-            }
+            fs::write(format!("{}.json", name.clone()), json_res.unwrap())
+                .expect("should write json formatted results");
+            fs::write("links.txt".to_string(), query_dump).expect("should write links list");
+            log.info(&format!(
+                "file {}.json created successfully",
+                registry.clone()
+            ));
         }
         Some(Commands::Digest {
             registry,
@@ -133,7 +152,8 @@ async fn main() {
                 url = url.replace("https", "http");
             }
             let res = i_query.get_details(url, token.unwrap(), true).await;
-            log.info(&format!("etag digest {}", res.unwrap()));
+            let rd = res.unwrap();
+            log.info(&format!("etag digest {}", rd.data));
         }
         Some(Commands::Copy {
             from,
