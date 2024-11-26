@@ -27,12 +27,26 @@ make build
 
 ```
 
-### List all tags for an image
+### List all tags from registry (namespace/name)
 
 ```bash
 ./target/release/rust-registry-tool list-tags --registry mac-fedora:8443 --namespace init/openshift --name release
 
+# a file with <registry>.json will be created 
+# use the following jq to pull out some valuse as an example
+# cat redhat-operator-index.json | jq -c '[ .[] | select( .tags[] | test("v4.15-[0-9]")?) ]' | jq | more
+
 ```
+
+### List all tags from registry by link url
+
+```bash
+# the previous cli creates a file called link.txt - use this as a reference
+# take any line and use the following to get to a quick subset of tags
+./target/release/registry-tool --loglevel debug list-tags-by-url --registry registry.redhat.io --url "/v2/redhat/redhat-operator-index/tags/list?n=100&last=v4.15-1697439109"
+
+```
+
 
 ### Get ETag
 

@@ -45,7 +45,7 @@ pub enum Commands {
         #[arg(short, long, value_name = "no-tls-verify", help = "disable tls-verify")]
         no_tls_verify: bool,
     },
-    /// ListTags list all tags by image
+    /// ListTags list all tags (specific registry/namespace/name)
     ListTags {
         #[arg(
             short,
@@ -68,16 +68,29 @@ pub enum Commands {
             help = "The images name to query (required)"
         )]
         name: String,
-        //#[arg(
-        //    short,
-        //    long,
-        //    value_name = "query-params",
-        //    help = "The link query-param to append to url for pagination (required)"
-        //)]
-        //query_params: Option<String>,
         #[arg(short, long, value_name = "no-tls-verify", help = "disable tls-verify")]
         no_tls_verify: bool,
     },
+    /// ListTagsByUrl list all tags (with pagination parameters)
+    ListTagsByUrl {
+        #[arg(
+            short,
+            long,
+            value_name = "registry",
+            help = "The image registry to query (required)"
+        )]
+        registry: String,
+        #[arg(
+            short,
+            long,
+            value_name = "url",
+            help = "The link url (from link.txt file) (required)"
+        )]
+        url: String,
+        #[arg(short, long, value_name = "no-tls-verify", help = "disable tls-verify")]
+        no_tls_verify: bool,
+    },
+
     /// Digest - get a digest reference from an image manifest
     Digest {
         #[arg(

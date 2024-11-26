@@ -124,6 +124,43 @@ async fn main() {
                 registry.clone()
             ));
         }
+        Some(Commands::ListTagsByUrl {
+            registry,
+            url,
+            no_tls_verify,
+        }) => {
+            let t_impl = ImplTokenInterface {};
+            let img_ref: Vec<&str> = url.split("/").collect::<Vec<&str>>();
+            log.debug(&format!("{:?}", img_ref));
+            let token = get_token(
+                t_impl,
+                log,
+                registry.to_string(),
+                format!("{}/{}", img_ref[2].to_string(), img_ref[3].to_string()),
+                !no_tls_verify,
+            )
+            .await;
+            let i_query = ImplQueryImageInterface {};
+            if token.is_err() {
+                log.error(&format!(
+                    "token {}",
+                    token.as_ref().err().unwrap().to_string().to_lowercase()
+                ));
+                process::exit(1);
+            }
+            let get_url = format!("https://{}{}", registry, url);
+            let res = i_query
+                .get_details(get_url, token.as_ref().unwrap().to_string(), false)
+                .await;
+            if res.is_err() {
+                log.error(&format!(
+                    "response {}",
+                    res.as_ref().err().unwrap().to_string().to_lowercase()
+                ));
+                process::exit(1);
+            }
+            log.info(&format!("{}", res.unwrap().data));
+        }
         Some(Commands::Digest {
             registry,
             namespace,
