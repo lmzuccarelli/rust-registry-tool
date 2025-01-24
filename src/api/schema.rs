@@ -68,6 +68,13 @@ pub enum Commands {
             help = "The images name to query (required)"
         )]
         name: String,
+        #[arg(
+            short,
+            long,
+            value_name = "version",
+            help = "The version tag to start querying (required)"
+        )]
+        version: String,
         #[arg(short, long, value_name = "no-tls-verify", help = "disable tls-verify")]
         no_tls_verify: bool,
     },

@@ -18,6 +18,7 @@ Build binary
 make build
 ```
 
+
 ### List all repositories
 
 ```bash
@@ -30,10 +31,13 @@ make build
 ### List all tags from registry (namespace/name)
 
 ```bash
-./target/release/rust-registry-tool list-tags --registry mac-fedora:8443 --namespace init/openshift --name release
+./target/release/rust-registry-tool list-tags --registry mac-fedora:8443 --namespace init/openshift --name release --version v4.16.0
+
+
+./target/release/rust-registry-tool list-tags --registry registry.redhat.io --namespace redhat --name redhat-operator-index --version v4.16.0
 
 # a file with <registry>.json will be created 
-# use the following jq to pull out some valuse as an example
+# use the following jq to pull out some values an example
 # cat redhat-operator-index.json | jq -c '[ .[] | select( .tags[] | test("v4.15-[0-9]")?) ]' | jq | more
 
 ```

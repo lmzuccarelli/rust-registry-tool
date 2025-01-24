@@ -26,6 +26,8 @@ async fn main() {
         log_level: res_log_level,
     };
 
+    fs::create_dir_all("results").expect("should create results directory");
+
     match &args.command {
         Some(Commands::ListCatalog {
             registry,
@@ -58,9 +60,14 @@ async fn main() {
             registry,
             namespace,
             name,
+            version,
             no_tls_verify,
             //query_params,
         }) => {
+            if version.len() < 5 {
+                log.error("version must be in the format v4.[0-9]{2}.0");
+                process::exit(1);
+            }
             let t_impl = ImplTokenInterface {};
             let token = get_token(
                 t_impl,
@@ -72,10 +79,11 @@ async fn main() {
             .await;
             let i_query = ImplQueryImageInterface {};
             let mut url = format!(
-                "https://{}/v2/{}/{}/tags/list",
+                "https://{}/v2/{}/{}/tags/list?n=100&last={}",
                 registry.clone(),
                 namespace.clone(),
-                name.clone()
+                name.clone(),
+                version.clone(),
             );
             if token.is_err() {
                 log.error(&format!(
@@ -88,8 +96,7 @@ async fn main() {
             let mut query = "query".to_string();
             let mut query_dump = "".to_string();
             log.info(&format!("querying {} ", registry.clone()));
-            log.info("this will take some time ...");
-            while query.len() > 0 {
+            while query.len() > 0 && !query.contains(&version[..5]) {
                 let res = i_query
                     .get_details(url.clone(), token.as_ref().unwrap().to_string(), false)
                     .await;
@@ -102,6 +109,7 @@ async fn main() {
                 }
                 let rd = res.unwrap();
                 query = rd.link;
+                log.trace(&format!("query link {}", query.clone()));
                 url = format!("https://{}{}", registry.clone(), query);
                 query_dump.push_str(&format!("{}\n", query));
                 let res_json = serde_json::from_str(&rd.data);
@@ -116,13 +124,11 @@ async fn main() {
                     json_res.as_ref().err().unwrap().to_string().to_lowercase()
                 ));
             }
-            fs::write(format!("{}.json", name.clone()), json_res.unwrap())
+            fs::write(format!("results/{}.json", name.clone()), json_res.unwrap())
                 .expect("should write json formatted results");
-            fs::write("links.txt".to_string(), query_dump).expect("should write links list");
-            log.info(&format!(
-                "file {}.json created successfully",
-                registry.clone()
-            ));
+            fs::write("results/links.txt".to_string(), query_dump)
+                .expect("should write links list");
+            log.info(&format!("file {}.json created successfully", name.clone()));
         }
         Some(Commands::ListTagsByUrl {
             registry,
