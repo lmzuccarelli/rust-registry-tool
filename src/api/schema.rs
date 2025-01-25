@@ -77,6 +77,8 @@ pub enum Commands {
         version: String,
         #[arg(short, long, value_name = "no-tls-verify", help = "disable tls-verify")]
         no_tls_verify: bool,
+        #[arg(short, long, value_name = "persist", help = "saves results to disk")]
+        persist: bool,
     },
     /// ListTagsByUrl list all tags (with pagination parameters)
     ListTagsByUrl {

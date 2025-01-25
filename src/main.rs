@@ -3,6 +3,7 @@ use clap::Parser;
 use custom_logger::*;
 use mirror_auth::{get_token, ImplTokenInterface};
 use mirror_query::*;
+use regex::Regex;
 use std::{fs, process};
 use tokio;
 
@@ -62,10 +63,11 @@ async fn main() {
             name,
             version,
             no_tls_verify,
-            //query_params,
+            persist,
         }) => {
-            if version.len() < 5 {
-                log.error("version must be in the format v4.[0-9]{2}.0");
+            let re = Regex::new(r"v4\.[0-9]{2}\.0").unwrap();
+            if !re.is_match(version) {
+                log.error("version must respect the regex expression 'v4.[0-9]{2}.0'");
                 process::exit(1);
             }
             let t_impl = ImplTokenInterface {};
@@ -117,18 +119,25 @@ async fn main() {
                 vec_tags.insert(0, root.clone());
             }
 
-            let json_res = serde_json::to_string(&vec_tags);
+            let json_res = serde_json::to_string_pretty(&vec_tags);
             if json_res.is_err() {
                 log.error(&format!(
                     "parsing json {}",
                     json_res.as_ref().err().unwrap().to_string().to_lowercase()
                 ));
             }
-            fs::write(format!("results/{}.json", name.clone()), json_res.unwrap())
-                .expect("should write json formatted results");
-            fs::write("results/links.txt".to_string(), query_dump)
-                .expect("should write links list");
-            log.info(&format!("file {}.json created successfully", name.clone()));
+            if *persist {
+                fs::write(format!("results/{}.json", name.clone()), json_res.unwrap())
+                    .expect("should write json formatted results");
+                fs::write("results/links.txt".to_string(), query_dump)
+                    .expect("should write links list");
+                log.info(&format!(
+                    "file results/{}.json created successfully",
+                    name.clone()
+                ));
+            } else {
+                log.info(&format!("results {}", json_res.unwrap()));
+            }
         }
         Some(Commands::ListTagsByUrl {
             registry,

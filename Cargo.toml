@@ -13,6 +13,7 @@ mirror-error = { git = "https://github.com/lmzuccarelli/rust-mirror-error", bran
 mirror-query = { git = "https://github.com/lmzuccarelli/rust-mirror-query", branch = "main", version = "0.6.0" }
 mirror-auth = { git = "https://github.com/lmzuccarelli/rust-mirror-auth", branch = "main", version = "0.7.0" }
 tokio = { version = "1.40.0", features = ["full"] }
+regex = "1.11.1"
 
 [profile.release]
 strip = true # Strip symbols from the binary
