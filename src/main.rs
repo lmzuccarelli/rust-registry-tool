@@ -65,11 +65,17 @@ async fn main() {
             no_tls_verify,
             persist,
         }) => {
-            let re = Regex::new(r"v4\.[0-9]{2}\.0").unwrap();
+            let re = Regex::new(r"4\.[0-9]{2}\.0").unwrap();
             if !re.is_match(version) {
-                log.error("version must respect the regex expression 'v4.[0-9]{2}.0'");
+                log.error("version must respect the regex expression '4.[0-9]{2}.0'");
                 process::exit(1);
             }
+            let cleaned_version = match name.as_str() {
+                "ocp-release" => {
+                    format!("{}", &version[..4])
+                }
+                _ => format!("v{}", &version[..4]),
+            };
             let t_impl = ImplTokenInterface {};
             let token = get_token(
                 t_impl,
@@ -81,12 +87,13 @@ async fn main() {
             .await;
             let i_query = ImplQueryImageInterface {};
             let mut url = format!(
-                "https://{}/v2/{}/{}/tags/list?n=100&last={}",
+                "https://{}/v2/{}/{}/tags/list?n=200&last={}",
                 registry.clone(),
                 namespace.clone(),
                 name.clone(),
-                version.clone(),
+                cleaned_version.clone(),
             );
+            log.trace(&format!("url {}", url));
             if token.is_err() {
                 log.error(&format!(
                     "token {}",
@@ -95,10 +102,11 @@ async fn main() {
                 process::exit(1);
             }
             let mut vec_tags: Vec<Tags> = Vec::new();
-            let mut query = "query".to_string();
+            let mut query = cleaned_version.to_string();
             let mut query_dump = "".to_string();
             log.info(&format!("querying {} ", registry.clone()));
-            while query.len() > 0 && !query.contains(&version[..5]) {
+
+            while query.len() > 0 && query.contains(&cleaned_version) {
                 let res = i_query
                     .get_details(url.clone(), token.as_ref().unwrap().to_string(), false)
                     .await;
@@ -112,6 +120,9 @@ async fn main() {
                 let rd = res.unwrap();
                 query = rd.link;
                 log.trace(&format!("query link {}", query.clone()));
+                if name == "ocp-release" && !query.contains(&cleaned_version) {
+                    break;
+                }
                 url = format!("https://{}{}", registry.clone(), query);
                 query_dump.push_str(&format!("{}\n", query));
                 let res_json = serde_json::from_str(&rd.data);
