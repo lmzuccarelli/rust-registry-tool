@@ -1,6 +1,6 @@
 use crate::api::schema::*;
 use clap::Parser;
-use custom_logger::*;
+use custom_logger as log;
 use mirror_auth::{get_token, ImplTokenInterface};
 use mirror_query::*;
 use regex::Regex;
@@ -16,17 +16,17 @@ async fn main() {
 
     // convert to enum
     let res_log_level = match level.as_str() {
-        "info" => Level::INFO,
-        "debug" => Level::DEBUG,
-        "trace" => Level::TRACE,
-        _ => Level::INFO,
+        "info" => log::LevelFilter::Info,
+        "debug" => log::LevelFilter::Debug,
+        "trace" => log::LevelFilter::Trace,
+        _ => log::LevelFilter::Info,
     };
 
     // setup logging
-    let log = &Logging {
-        log_level: res_log_level,
-    };
-
+    log::Logging::new()
+        .with_level(res_log_level)
+        .init()
+        .expect("should initialize");
     fs::create_dir_all("results").expect("should create results directory");
 
     match &args.command {
@@ -38,7 +38,6 @@ async fn main() {
             let t_impl = ImplTokenInterface {};
             let token = get_token(
                 t_impl,
-                log,
                 registry.to_string(),
                 namespace.to_string(),
                 !no_tls_verify,
@@ -54,7 +53,7 @@ async fn main() {
             let res_json = serde_json::from_str(&rd.data);
             let root: Catalogs = res_json.unwrap();
             for image in root.repositories.iter() {
-                log.info(&format!("{}", image));
+                log::info!("{}", image);
             }
         }
         Some(Commands::ListTags {
@@ -67,7 +66,7 @@ async fn main() {
         }) => {
             let re = Regex::new(r"4\.[0-9]{2}\.0").unwrap();
             if !re.is_match(version) {
-                log.error("version must respect the regex expression '4.[0-9]{2}.0'");
+                log::error!("format must respect the pattern -> '4.XX.0' where XX > 10");
                 process::exit(1);
             }
             let cleaned_version = match name.as_str() {
@@ -79,7 +78,6 @@ async fn main() {
             let t_impl = ImplTokenInterface {};
             let token = get_token(
                 t_impl,
-                log,
                 registry.to_string(),
                 format!("{}/{}", namespace, name),
                 !no_tls_verify,
@@ -93,33 +91,33 @@ async fn main() {
                 name.clone(),
                 cleaned_version.clone(),
             );
-            log.trace(&format!("url {}", url));
+            log::trace!("url {}", url);
             if token.is_err() {
-                log.error(&format!(
+                log::error!(
                     "token {}",
                     token.as_ref().err().unwrap().to_string().to_lowercase()
-                ));
+                );
                 process::exit(1);
             }
             let mut vec_tags: Vec<Tags> = Vec::new();
             let mut query = cleaned_version.to_string();
             let mut query_dump = "".to_string();
-            log.info(&format!("querying {} ", registry.clone()));
+            log::info!("querying {} ", registry.clone());
 
             while query.len() > 0 && query.contains(&cleaned_version) {
                 let res = i_query
                     .get_details(url.clone(), token.as_ref().unwrap().to_string(), false)
                     .await;
                 if res.is_err() {
-                    log.error(&format!(
+                    log::error!(
                         "response {}",
                         res.as_ref().err().unwrap().to_string().to_lowercase()
-                    ));
+                    );
                     process::exit(1);
                 }
                 let rd = res.unwrap();
                 query = rd.link;
-                log.trace(&format!("query link {}", query.clone()));
+                log::trace!("query link {}", query.clone());
                 if name == "ocp-release" && !query.contains(&cleaned_version) {
                     break;
                 }
@@ -132,22 +130,19 @@ async fn main() {
 
             let json_res = serde_json::to_string_pretty(&vec_tags);
             if json_res.is_err() {
-                log.error(&format!(
+                log::error!(
                     "parsing json {}",
                     json_res.as_ref().err().unwrap().to_string().to_lowercase()
-                ));
+                );
             }
             if *persist {
                 fs::write(format!("results/{}.json", name.clone()), json_res.unwrap())
                     .expect("should write json formatted results");
                 fs::write("results/links.txt".to_string(), query_dump)
                     .expect("should write links list");
-                log.info(&format!(
-                    "file results/{}.json created successfully",
-                    name.clone()
-                ));
+                log::info!("file results/{}.json created successfully", name.clone());
             } else {
-                log.info(&format!("results {}", json_res.unwrap()));
+                log::info!("results {}", json_res.unwrap());
             }
         }
         Some(Commands::ListTagsByUrl {
@@ -157,10 +152,9 @@ async fn main() {
         }) => {
             let t_impl = ImplTokenInterface {};
             let img_ref: Vec<&str> = url.split("/").collect::<Vec<&str>>();
-            log.debug(&format!("{:?}", img_ref));
+            log::debug!("{:?}", img_ref);
             let token = get_token(
                 t_impl,
-                log,
                 registry.to_string(),
                 format!("{}/{}", img_ref[2].to_string(), img_ref[3].to_string()),
                 !no_tls_verify,
@@ -168,10 +162,10 @@ async fn main() {
             .await;
             let i_query = ImplQueryImageInterface {};
             if token.is_err() {
-                log.error(&format!(
+                log::error!(
                     "token {}",
                     token.as_ref().err().unwrap().to_string().to_lowercase()
-                ));
+                );
                 process::exit(1);
             }
             let get_url = format!("https://{}{}", registry, url);
@@ -179,13 +173,13 @@ async fn main() {
                 .get_details(get_url, token.as_ref().unwrap().to_string(), false)
                 .await;
             if res.is_err() {
-                log.error(&format!(
+                log::error!(
                     "response {}",
                     res.as_ref().err().unwrap().to_string().to_lowercase()
-                ));
+                );
                 process::exit(1);
             }
-            log.info(&format!("{}", res.unwrap().data));
+            log::info!("{}", res.unwrap().data);
         }
         Some(Commands::Digest {
             registry,
@@ -197,7 +191,6 @@ async fn main() {
             let t_impl = ImplTokenInterface {};
             let token = get_token(
                 t_impl,
-                log,
                 registry.to_string(),
                 format!("{}/{}", namespace, name),
                 !no_tls_verify,
@@ -216,19 +209,19 @@ async fn main() {
             }
             let res = i_query.get_details(url, token.unwrap(), true).await;
             let rd = res.unwrap();
-            log.info(&format!("etag digest {}", rd.data));
+            log::info!("etag digest {}", rd.data);
         }
         Some(Commands::Copy {
             from,
             to,
             no_tls_verify,
         }) => {
-            log.info(&format!("{} {} {}", from, to, no_tls_verify));
+            log::info!("{} {} {}", from, to, no_tls_verify);
             todo!()
         }
 
         None => {
-            log.error("sub command not recognized");
+            log::error!("sub command not recognized");
             process::exit(1);
         }
     }

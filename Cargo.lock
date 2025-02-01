@@ -229,6 +229,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3fd119d74b830634cea2a0f58bbd0d54540518a14397557951e79340abc28c0"
 
 [[package]]
+name = "colored"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "117725a109d387c937a1533ce01b450cbde6b88abceea8473c4d7a85853cda3c"
+dependencies = [
+ "lazy_static",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -246,10 +256,12 @@ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 
 [[package]]
 name = "custom-logger"
-version = "0.1.4"
-source = "git+https://github.com/lmzuccarelli/rust-custom-logger?branch=main#f0ab24a95fdad4ed0df9f217f6add076f1d34897"
+version = "0.2.0"
+source = "git+https://github.com/lmzuccarelli/rust-custom-logger?branch=main#879eeefe99d0ea900984b0df817bce932b76caf9"
 dependencies = [
  "chrono",
+ "colored",
+ "log",
 ]
 
 [[package]]
@@ -537,6 +549,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "lazy_static"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
+
+[[package]]
 name = "libc"
 version = "0.2.158"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -599,12 +617,12 @@ dependencies = [
 
 [[package]]
 name = "mirror-auth"
-version = "0.7.0"
-source = "git+https://github.com/lmzuccarelli/rust-mirror-auth?branch=main#e318b32250203f6c487babe8d0ce3665d175225d"
+version = "0.8.0"
+source = "git+https://github.com/lmzuccarelli/rust-mirror-auth?branch=main#4286acc5b183899fa641e8ba2a814dbb17b59705"
 dependencies = [
  "async-trait",
  "base64",
- "custom-logger",
+ "log",
  "mirror-error",
  "reqwest",
  "serde",
@@ -620,11 +638,10 @@ source = "git+https://github.com/lmzuccarelli/rust-mirror-error?branch=main#9d9c
 
 [[package]]
 name = "mirror-query"
-version = "0.6.0"
-source = "git+https://github.com/lmzuccarelli/rust-mirror-query?branch=main#48da855be9a9d45cd7520f9b47cc33ecd75a881e"
+version = "0.7.0"
+source = "git+https://github.com/lmzuccarelli/rust-mirror-query?branch=main#21ecdedb711e13fb34112a78815059eebda3c4b5"
 dependencies = [
  "async-trait",
- "custom-logger",
  "mirror-error",
  "reqwest",
  "tokio",
