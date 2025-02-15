@@ -42,7 +42,7 @@ pub enum Commands {
         )]
         namespace: String,
 
-        #[arg(short, long, value_name = "no-tls-verify", help = "disable tls-verify")]
+        #[arg(long, value_name = "no-tls-verify", help = "disable tls-verify")]
         no_tls_verify: bool,
     },
     /// ListTags list all tags (specific registry/namespace/name)
@@ -55,14 +55,12 @@ pub enum Commands {
         )]
         registry: String,
         #[arg(
-            short,
             long,
             value_name = "namespace",
             help = "The image namespace to query (required)"
         )]
         namespace: String,
         #[arg(
-            short,
             long,
             value_name = "name",
             help = "The images name to query (required)"
@@ -75,7 +73,7 @@ pub enum Commands {
             help = "The version tag to start querying (required)"
         )]
         version: String,
-        #[arg(short, long, value_name = "no-tls-verify", help = "disable tls-verify")]
+        #[arg(long, value_name = "no-tls-verify", help = "disable tls-verify")]
         no_tls_verify: bool,
         #[arg(short, long, value_name = "persist", help = "saves results to disk")]
         persist: bool,
@@ -110,14 +108,12 @@ pub enum Commands {
         )]
         registry: String,
         #[arg(
-            short,
             long,
             value_name = "namespace",
             help = "The image namespace to query (required)"
         )]
         namespace: String,
         #[arg(
-            short,
             long,
             value_name = "name",
             help = "The images name to query (required)"
@@ -131,7 +127,6 @@ pub enum Commands {
         )]
         tag: String,
         #[arg(
-            short,
             long,
             value_name = "no-tls-verify",
             default_value = "false",
