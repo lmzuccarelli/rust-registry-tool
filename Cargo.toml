@@ -1,6 +1,6 @@
 [package]
 name = "registry-tool"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2021"
 
 [dependencies]
@@ -16,8 +16,7 @@ tokio = { version = "1.40.0", features = ["full"] }
 regex = "1.11.1"
 
 [profile.release]
-strip = true # Strip symbols from the binary
-opt-level = "s" # Optimize for size
-lto = true # Enable link-time optimization
+strip = true      # Strip symbols from the binary
+opt-level = "s"   # Optimize for size
+lto = true        # Enable link-time optimization
 codegen-units = 1 # Mazimize size reduction optimization
-
