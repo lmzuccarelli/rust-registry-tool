@@ -639,6 +639,7 @@ source = "git+https://github.com/lmzuccarelli/rust-mirror-error?branch=main#3cc9
 [[package]]
 name = "mirror-query"
 version = "0.8.0"
+source = "git+https://github.com/lmzuccarelli/rust-mirror-query?branch=main#059274f4984ae66d440a3de3fa6a38d25c448097"
 dependencies = [
  "async-trait",
  "mirror-error",
@@ -837,7 +838,7 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
 name = "registry-tool"
-version = "0.4.1"
+version = "0.5.0"
 dependencies = [
  "clap",
  "custom-logger",
