@@ -140,6 +140,7 @@ async fn main() -> Result<(), MirrorError> {
             name,
             tag,
             no_tls_verify,
+            no_format,
         }) => {
             let url = format!(
                 "http{}://{registry}/v2/{namespace}/{name}/manifests/{tag}",
@@ -154,8 +155,12 @@ async fn main() -> Result<(), MirrorError> {
             )
             .await?;
             let i_query = ImplQueryImageInterface {};
-            let rd = i_query.get_details(url, token, true).await?;
-            log::info!("etag digest {}", rd.data);
+            let rd = i_query.get_details(url, token, false).await?;
+            if no_format {
+                println!("{}", rd.data);
+            } else {
+                log::info!("{}", rd.data);
+            }
         }
         Some(Commands::Copy {
             from,

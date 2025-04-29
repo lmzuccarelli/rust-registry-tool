@@ -38,11 +38,10 @@ make build
 ./target/release/rust-registry-tool list-tags --registry registry.redhat.io --namespace redhat --name redhat-operator-index --version v4.16.0
 ```
 
-### Get ETag
+### Get Manifest
 
 ```bash
- ./target/release/rust-registry-tool list-tags --registry mac-fedora:8443 --namespace init/ubi9 --name ubi-micro   
-
-$ ./target/release/rust-registry-tool digest --registry mac-fedora:8443 --namespace init/ubi9 --name ubi-micro --tag sha256-11b5e26e24ce14b02372860115162e81ae011b748619b371f261e1e97d4cf2bf  
+# get the manifest or manifest list and pipe to jq
+registry-tool --loglevel info digest --registry registry.redhat.io --namespace redhat --name certified-operator-index --tag v4.16-1711400921 --no-format | jq
 
 ```

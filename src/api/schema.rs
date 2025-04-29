@@ -133,6 +133,13 @@ pub enum Commands {
             help = "disable tls-verify"
         )]
         no_tls_verify: bool,
+        #[arg(
+            long,
+            value_name = "no-format",
+            default_value = "false",
+            help = "disable no-format"
+        )]
+        no_format: bool,
     },
     /// Copy
     Copy {
