@@ -70,13 +70,20 @@ pub enum Commands {
             short,
             long,
             value_name = "version",
-            help = "The version tag to start querying (required)"
+            help = "The version tag to start querying (optional)"
         )]
-        version: String,
+        version: Option<String>,
         #[arg(long, value_name = "no-tls-verify", help = "disable tls-verify")]
         no_tls_verify: bool,
         #[arg(short, long, value_name = "persist", help = "saves results to disk")]
         persist: bool,
+        #[arg(
+            long,
+            value_name = "no-format",
+            default_value = "false",
+            help = "disable no-format"
+        )]
+        no_format: bool,
     },
     /// ListTagsByUrl list all tags (with pagination parameters)
     ListTagsByUrl {
@@ -123,7 +130,7 @@ pub enum Commands {
             short,
             long,
             value_name = "tag",
-            help = "The images tag  query (required)"
+            help = "The images tag  query (reuired)"
         )]
         tag: String,
         #[arg(

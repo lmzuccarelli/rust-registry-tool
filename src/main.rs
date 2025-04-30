@@ -39,11 +39,7 @@ async fn main() -> Result<(), MirrorError> {
             let token = get_token(t_impl, registry, namespace, !no_tls_verify).await?;
             let i_query = ImplQueryImageInterface {};
             let rd = i_query.get_details(url, token, false).await?;
-            let root: Catalogs = serde_json::from_str(&rd.data)
-                .map_err(|e| MirrorError::new(&format!("should unmarshall response data: {e}")))?;
-            for image in root.repositories.iter() {
-                log::info!("{image}");
-            }
+            println!("{}", rd.data);
         }
         Some(Commands::ListTags {
             registry,
@@ -52,17 +48,9 @@ async fn main() -> Result<(), MirrorError> {
             version,
             no_tls_verify,
             persist,
+            no_format,
         }) => {
-            let re = Regex::new(r"4\.[0-9]{2}\.0").expect("regex must compile");
-            if !re.is_match(&version) {
-                return Err(MirrorError::new(
-                    "format must respect the pattern -> '4.XX.0' where XX > 10",
-                ));
-            }
-            let cleaned_version = match name.as_str() {
-                "ocp-release" => version[..4].to_string(),
-                _ => format!("v{}", &version[..4]),
-            };
+            let i_query = ImplQueryImageInterface {};
             let t_impl = ImplTokenInterface {};
             let token = get_token(
                 t_impl,
@@ -71,44 +59,68 @@ async fn main() -> Result<(), MirrorError> {
                 !no_tls_verify,
             )
             .await?;
-            let i_query = ImplQueryImageInterface {};
-            let mut url = format!(
-                "http{}://{registry}/v2/{namespace}/{name}/tags/list?n=200&last={cleaned_version}",
-                if no_tls_verify { "" } else { "s" },
-            );
-            log::trace!("url {url}");
-            let mut vec_tags: Vec<Tags> = Vec::new();
-            let mut query = cleaned_version.to_string();
-            let mut query_dump = "".to_string();
-            log::info!("querying {registry}");
 
-            while !query.is_empty() && query.contains(&cleaned_version) {
-                let rd = i_query.get_details(url, token.clone(), false).await?;
-                query = rd.link;
-                log::trace!("query link {query}");
-                if name == "ocp-release" && !query.contains(&cleaned_version) {
-                    break;
+            if version.is_some() {
+                let re = Regex::new(r"4\.[0-9]{2}\.0").expect("regex must compile");
+                if !re.is_match(&version.as_ref().unwrap()) {
+                    return Err(MirrorError::new(
+                        "format must respect the pattern -> '4.XX.0' where XX > 10",
+                    ));
                 }
-                url = format!(
-                    "http{}://{registry}{query}",
-                    if no_tls_verify { "" } else { "s" }
-                );
-                query_dump.push_str(&format!("{query}\n"));
-                let root: Tags = serde_json::from_str(&rd.data).map_err(|e| {
-                    MirrorError::new(&format!("could not parse response data: {e}"))
-                })?;
-                vec_tags.insert(0, root);
-            }
+                let mut vec_tags: Vec<Tags> = Vec::new();
+                let mut query_dump = "".to_string();
+                let ver = version.unwrap();
 
-            let json = serde_json::to_string_pretty(&vec_tags)
-                .map_err(|e| MirrorError::new(&format!("failed to marshal json: {e}")))?;
-            if persist {
-                fs::write(format!("results/{name}.json"), json)
-                    .expect("should write json formatted results");
-                fs::write("results/links.txt", query_dump).expect("should write links list");
-                log::info!("file results/{name}.json created successfully");
+                let cleaned_version = match name.as_str() {
+                    "ocp-release" => ver[..4].to_string(),
+                    _ => format!("v{}", &ver[..4]),
+                };
+
+                let mut url = format!(
+                    "http{}://{registry}/v2/{namespace}/{name}/tags/list?n=200&last={cleaned_version}",
+                    if no_tls_verify { "" } else { "s" },
+                );
+                let mut query = cleaned_version.to_string();
+                log::trace!("url {url}");
+                while !query.is_empty() && query.contains(&cleaned_version) {
+                    let rd = i_query.get_details(url, token.clone(), false).await?;
+                    query = rd.link;
+                    log::trace!("query link {query}");
+                    if name == "ocp-release" && !query.contains(&cleaned_version) {
+                        break;
+                    }
+                    url = format!(
+                        "http{}://{registry}{query}",
+                        if no_tls_verify { "" } else { "s" }
+                    );
+                    query_dump.push_str(&format!("{query}\n"));
+                    let root: Tags = serde_json::from_str(&rd.data).map_err(|e| {
+                        MirrorError::new(&format!("could not parse response data: {e}"))
+                    })?;
+                    vec_tags.insert(0, root);
+                }
+                log::info!("querying {registry}");
+                let json = serde_json::to_string_pretty(&vec_tags)
+                    .map_err(|e| MirrorError::new(&format!("failed to marshal json: {e}")))?;
+                if persist {
+                    fs::write(format!("results/{name}.json"), json)
+                        .expect("should write json formatted results");
+                    fs::write("results/links.txt", query_dump).expect("should write links list");
+                    log::info!("file results/{name}.json created successfully");
+                } else {
+                    println!("{}", json);
+                }
             } else {
-                log::info!("results {json}");
+                let url = format!(
+                    "http{}://{registry}/v2/{namespace}/{name}/tags/list?n=500",
+                    if no_tls_verify { "" } else { "s" },
+                );
+                let rd = i_query.get_details(url, token.clone(), false).await?;
+                if no_format {
+                    println!("{}", rd.data);
+                } else {
+                    log::info!("results {}", rd.data);
+                }
             }
         }
         Some(Commands::ListTagsByUrl {
