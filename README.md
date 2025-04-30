@@ -31,7 +31,8 @@ make build
 ### List all tags from registry (namespace/name)
 
 ```bash
-# not version must respect the regex expresion : v4.[0-9]{2}.0
+# version must respect the regex expresion : 4.[0-9]{2}.0
+# note the missing v !!!!
 ./target/release/rust-registry-tool list-tags --registry mac-fedora:8443 --namespace init/openshift --name release --version 4.16.0
 
 
