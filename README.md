@@ -32,10 +32,10 @@ make build
 
 ```bash
 # not version must respect the regex expresion : v4.[0-9]{2}.0
-./target/release/rust-registry-tool list-tags --registry mac-fedora:8443 --namespace init/openshift --name release --version v4.16.0
+./target/release/rust-registry-tool list-tags --registry mac-fedora:8443 --namespace init/openshift --name release --version 4.16.0
 
 
-./target/release/rust-registry-tool list-tags --registry registry.redhat.io --namespace redhat --name redhat-operator-index --version v4.16.0
+./target/release/rust-registry-tool list-tags --registry registry.redhat.io --namespace redhat --name redhat-operator-index --version 4.16.0
 ```
 
 ### Get Manifest
