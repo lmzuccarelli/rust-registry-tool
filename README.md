@@ -39,6 +39,20 @@ make build
 ./target/release/rust-registry-tool list-tags --registry registry.redhat.io --namespace redhat --name redhat-operator-index --version 4.16.0
 ```
 
+### Find the latest tag version 
+
+```bash
+# version must respect the regex expresion : 4.[0-9]{2}.0
+# note the missing v !!!!
+# add the -p flag to persist the results
+
+./target/release/rust-registry-tool list-tags --registry registry.redhat.io --namespace redhat --name redhat-operator-index --version 4.18.0 -p
+
+cat results/redhat-operator-index.json | grep -Eo 'v4.18-[0-9]+' | sort -rn | head -n 1
+
+```
+
+
 ### Get Manifest
 
 ```bash
